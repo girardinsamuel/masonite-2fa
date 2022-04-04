@@ -1,0 +1,19 @@
+# python
+*.pyc
+*__pycache__
+.pytest_cache
+venv
+build/
+# environment
+.env
+.env.*
+!.env.testing
+# npm
+node_modules
+package-lock.json
+
+.vscode
+**/*.DS_Store
+masonite_2fa.egg-info
+# compiled assets
+tests/integrations/storage/compiled
