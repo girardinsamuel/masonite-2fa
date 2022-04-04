@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masonite 4</title>
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="p-4">
+  {% block content %}
+
+  <h1 class="text-xl font-medium mb-6">Account</h2>
+  <p>Connected as : {{ user.name }} ({{ user.email }})</p>
+  <p>Access admin (where 2FA is forced): <a href="/admin" class="underline text-blue-500">admin</a></p>
+
+  <p>{{ session().get('error') }}</p>
+  <p>{{ session().get('success') }}</p>
+  <p>{{ twofa_enabled }}</p>
+  {% if twofa_enabled %}
+    <h2 class="text-md font-medium mt-4">2FA configured</h2>
+    {% if otp_codes %}
+    <p>Backup codes:</p>
+    <ul class="list-disc ml-4">
+      {% for code in otp_codes %}
+        <li>{{ code }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <p>Backup Codes left: {{ otp_codes_left }}</p>
+    <form action="/disable" method="POST">
+      {{ csrf_field }}
+      <button type="submit" class="px-4 py-2 inline-flex border-1 rounded-md text-sm bg-red-600 text-white">Disable</button>
+    </form>
+    <form action="/refresh-codes" method="POST">
+      {{ csrf_field }}
+      <button type="submit" class="px-4 py-2 inline-flex border-1 rounded-md text-sm bg-red-600 text-white">Refresh backup
+        codes</button>
+    </form>
+  {% elif not twofa_enabled and not otp_secret %}
+  <h2 class="text-md font-medium mt-4">Enable 2FA in your account</h2>
+  <form action="/enable" method="POST">
+    {{ csrf_field }}
+    <button type="submit" class="px-4 py-2 inline-flex border-1 rounded-md text-sm bg-indigo-600 text-white">Enable</button>
+  </form>
+  {% elif otp_secret %}
+  <h2 class="text-md font-medium mt-4">Complete configuring 2FA in your account</h2>
+  <p>Secret: {{ otp_secret }}</p>
+  <p>OTP URI: {{ otp_uri }}</p>
+  <p>QR code:</p>
+
+  <!-- QRCode as img -->
+  <!-- <img src="{{ otp_qrcode }}" alt="QR code" class=""> -->
+
+  <!-- QRCode as svg -->
+  {{ otp_qrcode|safe }}
+
+  <form action="/configure" method="POST">
+    {{ csrf_field }}
+    <div>
+      <label for="code" class="block text-sm font-medium text-gray-700">Enter code from your OTP app</label>
+      <div class="mt-1">
+        <input type="text" name="code" id="code"
+          class="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-1 border-gray-300 rounded-md"
+          placeholder="123456" />
+      </div>
+    </div>
+    <button type="submit"
+      class="px-4 py-2 inline-flex border-1 rounded-md text-sm bg-indigo-600 text-white">Complete</button>
+  </form>
+  <form action="/disable" method="POST">
+    {{ csrf_field }}
+    <button type="submit"
+      class="px-4 py-2 inline-flex border-1 rounded-md text-sm bg-red-600 text-white">Disable</button>
+  </form>
+  {% endif %}
+
+  <a href="/logout" class="mt-6 px-4 py-2 inline-flex border-1 rounded-md text-sm bg-red-600 text-white">Logout</a>
+  {% endblock %}
+</body>
+
+</html>
